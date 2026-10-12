@@ -7,7 +7,8 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "generate:layout": "tsx scripts/generate_telemetry_layout.ts"
+    "generate:layout": "tsx scripts/generate_telemetry_layout.ts",
+    "simulate": "tsx simulator/physics_engine.ts"
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
