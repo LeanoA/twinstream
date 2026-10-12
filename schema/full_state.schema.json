@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/example/case-03/schema/full_state.schema.json",
+  "title": "FullStateTelemetrySnapshot",
+  "description": "Complete state snapshot of all active telemetry channels for a 3D digital twin system",
+  "type": "object",
+  "required": [
+    "timestamp",
+    "signals"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Epoch timestamp in milliseconds or high-resolution tick"
+    },
+    "signals": {
+      "type": "object",
+      "description": "Dictionary mapping channel identifiers to float64 numeric values",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "minProperties": 1
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional simulation session metadata and tick diagnostics",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "channelCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/example/case-03/schema/delta_packet.schema.json",
+  "title": "DeltaTelemetryPacket",
+  "description": "Compact delta transmission packet containing only telemetry signals exceeding the deadband threshold",
+  "type": "object",
+  "required": [
+    "timestamp",
+    "seq",
+    "deltas"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Epoch timestamp in milliseconds or high-resolution tick"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonically increasing sequence number for packet loss detection"
+    },
+    "deltas": {
+      "type": "array",
+      "description": "Array of 2-element tuples: [channel_id, new_value]",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "description": "Unique channel identifier"
+          },
+          {
+            "type": "number",
+            "description": "Updated float64 numeric value"
+          }
+        ],
+        "items": false,
+        "minItems": 2,
+        "maxItems": 2
+      }
+    }
+  },
+  "additionalProperties": false
+}
