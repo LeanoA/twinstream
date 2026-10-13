@@ -57,10 +57,10 @@ describe('TelemetryReceiver & Zero-Allocation Interpolator', () => {
         'assembly_00_base_pos_x': 0.0,
         'assembly_00_base_pos_y': 0.0,
         'assembly_00_base_pos_z': 0.0,
-        'assembly_01_turret_pos_y': 0.5,
-        'assembly_01_turret_rot_y': 0.7071,
-        'assembly_01_turret_rot_w': 0.7071,
-        'assembly_02_shoulder_pos_y': 1.25,
+        'assembly_01_turret_pos_y': 0.35,
+        'assembly_01_turret_rot_qy': 0.7071,
+        'assembly_01_turret_rot_qw': 0.7071,
+        'assembly_02_shoulder_pos_y': 0.45,
         'aux_temp_sensor_unmapped': 45.2
       }
     };
@@ -71,14 +71,14 @@ describe('TelemetryReceiver & Zero-Allocation Interpolator', () => {
     const turret = states[1];
     const shoulder = states[2];
 
-    expect(turret.currentPos.y).toBeCloseTo(0.5, 4);
-    expect(turret.targetPos.y).toBeCloseTo(0.5, 4);
-    expect(turret.mesh.position.y).toBeCloseTo(0.5, 4);
+    expect(turret.currentPos.y).toBeCloseTo(0.35, 4);
+    expect(turret.targetPos.y).toBeCloseTo(0.35, 4);
+    expect(turret.mesh.position.y).toBeCloseTo(0.35, 4);
     expect(turret.currentQuat.y).toBeCloseTo(0.7071, 4);
     expect(turret.currentQuat.w).toBeCloseTo(0.7071, 4);
 
-    expect(shoulder.currentPos.y).toBeCloseTo(1.25, 4);
-    expect(shoulder.targetPos.y).toBeCloseTo(1.25, 4);
+    expect(shoulder.currentPos.y).toBeCloseTo(0.45, 4);
+    expect(shoulder.targetPos.y).toBeCloseTo(0.45, 4);
   });
 
   it('unpacks delta packets in-place and updates target registers', () => {
@@ -87,11 +87,11 @@ describe('TelemetryReceiver & Zero-Allocation Interpolator', () => {
       timestamp: 1016.6,
       deltas: [
         ['assembly_01_turret_pos_x', 0.15],
-        ['assembly_01_turret_pos_y', 0.65],
-        ['assembly_02_shoulder_pos_z', 0.85],
-        ['assembly_02_shoulder_rot_x', 0.38268],
-        ['assembly_02_shoulder_rot_w', 0.92388],
-        ['assembly_09_sensor_pod_pos_z', 1.82]
+        ['assembly_01_turret_pos_y', 0.35],
+        ['assembly_02_shoulder_pos_z', 0.10],
+        ['assembly_02_shoulder_rot_qx', 0.38268],
+        ['assembly_02_shoulder_rot_qw', 0.92388],
+        ['assembly_09_sensor_pod_pos_z', 0.08]
       ]
     };
 
@@ -108,11 +108,11 @@ describe('TelemetryReceiver & Zero-Allocation Interpolator', () => {
     const pod = states[9];
 
     expect(turret.targetPos.x).toBeCloseTo(0.15, 4);
-    expect(turret.targetPos.y).toBeCloseTo(0.65, 4);
-    expect(shoulder.targetPos.z).toBeCloseTo(0.85, 4);
+    expect(turret.targetPos.y).toBeCloseTo(0.35, 4);
+    expect(shoulder.targetPos.z).toBeCloseTo(0.10, 4);
     expect(shoulder.targetQuat.x).toBeCloseTo(0.38268, 4);
     expect(shoulder.targetQuat.w).toBeCloseTo(0.92388, 4);
-    expect(pod.targetPos.z).toBeCloseTo(1.82, 4);
+    expect(pod.targetPos.z).toBeCloseTo(0.08, 4);
   });
 
   it('guarantees zero heap allocation invariant during in-place Lerp and Slerp step', () => {

@@ -139,45 +139,45 @@ export class PhysicsEngine {
   public evaluatePhysics(tick: number): void {
     const t = (tick * Number(this.periodNs)) / 1_000_000_000; // time in seconds
 
-    // 1. Joint Kinematics across 10 assemblies
-    // Assembly 0: Base
+    // 1. Joint Kinematics across 10 assemblies (URDF Kinematic Tree relative origins & local rotations)
+    // Assembly 0: Base Mounting Platform (Root)
     this.setKinematics('assembly_00_base', [0, 0, 0], [0, 0, 0, 1]);
 
-    // Assembly 1: Turret (azimuth yaw around Y)
+    // Assembly 1: Turret (Child of Base: azimuth yaw around Y)
     const yaw1 = 0.5 * Math.sin(0.4 * Math.PI * t);
-    this.setKinematics('assembly_01_turret', [0, 0.5, 0], this.fromAxisAngle([0, 1, 0], yaw1));
+    this.setKinematics('assembly_01_turret', [0, 0.35, 0], this.fromAxisAngle([0, 1, 0], yaw1));
 
-    // Assembly 2: Shoulder (pitch around X)
+    // Assembly 2: Shoulder (Child of Turret: pitch around X)
     const pitch2 = 0.35 * Math.sin(0.6 * Math.PI * t + 0.3);
-    this.setKinematics('assembly_02_shoulder', [0, 1.2 + 0.05 * Math.cos(0.4 * Math.PI * t), 0], this.fromAxisAngle([1, 0, 0], pitch2));
+    this.setKinematics('assembly_02_shoulder', [0, 0.45, 0], this.fromAxisAngle([1, 0, 0], pitch2));
 
-    // Assembly 3: Elbow (pitch around X)
+    // Assembly 3: Elbow (Child of Shoulder: pitch around X)
     const pitch3 = 0.4 * Math.cos(0.8 * Math.PI * t);
-    this.setKinematics('assembly_03_elbow', [0, 2.0 + 0.1 * Math.sin(0.6 * Math.PI * t), 0.4 * Math.cos(pitch2)], this.fromAxisAngle([1, 0, 0], pitch3));
+    this.setKinematics('assembly_03_elbow', [0, 0.95, 0], this.fromAxisAngle([1, 0, 0], pitch3));
 
-    // Assembly 4: Forearm (roll around Z)
+    // Assembly 4: Forearm (Child of Elbow: roll around Y)
     const roll4 = 0.3 * Math.sin(Math.PI * t);
-    this.setKinematics('assembly_04_forearm', [0.1 * Math.sin(yaw1), 2.6, 0.8 + 0.15 * Math.sin(0.5 * Math.PI * t)], this.fromAxisAngle([0, 0, 1], roll4));
+    this.setKinematics('assembly_04_forearm', [0, 0, 0], this.fromAxisAngle([0, 1, 0], roll4));
 
-    // Assembly 5: Wrist Pitch (pitch around X)
+    // Assembly 5: Wrist Pitch (Child of Forearm: pitch around X)
     const pitch5 = 0.25 * Math.cos(1.2 * Math.PI * t);
-    this.setKinematics('assembly_05_wrist_pitch', [0.15 * Math.sin(yaw1), 3.1, 1.1], this.fromAxisAngle([1, 0, 0], pitch5));
+    this.setKinematics('assembly_05_wrist_pitch', [0, 0.85, 0], this.fromAxisAngle([1, 0, 0], pitch5));
 
-    // Assembly 6: Wrist Yaw (yaw around Y)
+    // Assembly 6: Wrist Yaw (Child of Wrist Pitch: yaw around Y)
     const yaw6 = 0.2 * Math.sin(1.4 * Math.PI * t);
-    this.setKinematics('assembly_06_wrist_yaw', [0.2 * Math.sin(yaw1), 3.4, 1.3], this.fromAxisAngle([0, 1, 0], yaw6));
+    this.setKinematics('assembly_06_wrist_yaw', [0, 0.12, 0], this.fromAxisAngle([0, 1, 0], yaw6));
 
-    // Assembly 7: Wrist Roll (roll around Z)
+    // Assembly 7: Wrist Roll (Child of Wrist Yaw: roll around Z)
     const roll7 = 0.4 * Math.sin(0.7 * Math.PI * t);
-    this.setKinematics('assembly_07_wrist_roll', [0.2 * Math.sin(yaw1), 3.7, 1.5], this.fromAxisAngle([0, 0, 1], roll7));
+    this.setKinematics('assembly_07_wrist_roll', [0, 0.10, 0], this.fromAxisAngle([0, 0, 1], roll7));
 
-    // Assembly 8: End Effector
-    const toolPitch = 0.15 * Math.sin(1.5 * Math.PI * t);
-    this.setKinematics('assembly_08_end_effector', [0.25 * Math.sin(yaw1), 4.0, 1.7 + 0.05 * Math.sin(2 * Math.PI * t)], this.fromAxisAngle([1, 0, 0], toolPitch));
+    // Assembly 8: End Effector (Child of Wrist Roll: micro tool pitch)
+    const toolPitch = 0.05 * Math.sin(1.5 * Math.PI * t);
+    this.setKinematics('assembly_08_end_effector', [0, 0.04, 0], this.fromAxisAngle([1, 0, 0], toolPitch));
 
-    // Assembly 9: Sensor Pod
+    // Assembly 9: Sensor Pod (Child of End Effector: scan pod yaw)
     const podYaw = 0.1 * Math.cos(Math.PI * t);
-    this.setKinematics('assembly_09_sensor_pod', [0.25 * Math.sin(yaw1), 4.2, 1.8], this.fromAxisAngle([0, 1, 0], podYaw));
+    this.setKinematics('assembly_09_sensor_pod', [0.08, 0.06, 0.08], this.fromAxisAngle([0, 1, 0], podYaw));
 
     // 2. Correlated Auxiliary Sensors for each assembly
     const armSpeed = Math.abs(Math.cos(0.4 * Math.PI * t)) + Math.abs(Math.cos(0.6 * Math.PI * t));

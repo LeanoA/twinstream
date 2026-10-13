@@ -11,10 +11,10 @@ export class SceneManager {
   private resizeObserver: ResizeObserver | null = null;
   private boundResizeHandler: () => void;
 
-  // Cached materials for zero-allocation rendering and uniform aesthetics
+  // Cached materials for zero-allocation rendering and uniform industrial aesthetics
   private materials = {
     chassis: new THREE.MeshStandardMaterial({
-      color: 0x24292f,
+      color: 0x21262d,
       roughness: 0.35,
       metalness: 0.85
     }),
@@ -24,21 +24,21 @@ export class SceneManager {
       metalness: 0.9
     }),
     accentAmber: new THREE.MeshStandardMaterial({
-      color: 0xd29922,
-      roughness: 0.4,
-      metalness: 0.6
+      color: 0xd97706,
+      roughness: 0.35,
+      metalness: 0.65
     }),
     accentBlue: new THREE.MeshStandardMaterial({
-      color: 0x1f6feb,
-      roughness: 0.3,
-      metalness: 0.7,
-      emissive: 0x09264a,
-      emissiveIntensity: 0.4
+      color: 0x38bdf8,
+      roughness: 0.2,
+      metalness: 0.8,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.7
     }),
     gripper: new THREE.MeshStandardMaterial({
       color: 0x8b949e,
-      roughness: 0.2,
-      metalness: 0.9
+      roughness: 0.15,
+      metalness: 0.95
     }),
     ground: new THREE.MeshStandardMaterial({
       color: 0x161b22,
@@ -57,7 +57,7 @@ export class SceneManager {
     const height = container.clientHeight || window.innerHeight;
 
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    this.camera.position.set(4.5, 3.5, 5.5);
+    this.camera.position.set(4.5, 3.2, 5.5);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -72,7 +72,7 @@ export class SceneManager {
     this.container.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.target.set(0, 1.8, 0);
+    this.controls.target.set(0, 1.6, 0);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.maxPolarAngle = Math.PI / 2 - 0.02; // Prevent subsurface orbit
@@ -95,10 +95,10 @@ export class SceneManager {
   }
 
   private setupLighting(): void {
-    const ambientLight = new THREE.AmbientLight(0x22272e, 1.6);
+    const ambientLight = new THREE.AmbientLight(0x22272e, 1.8);
     this.scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
     keyLight.position.set(5, 8, 4);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
@@ -112,17 +112,17 @@ export class SceneManager {
     keyLight.shadow.bias = -0.0005;
     this.scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0x58a6ff, 0.8);
+    const fillLight = new THREE.DirectionalLight(0x58a6ff, 0.9);
     fillLight.position.set(-4, 3, -3);
     this.scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xd29922, 0.5);
+    const rimLight = new THREE.DirectionalLight(0xd97706, 0.6);
     rimLight.position.set(0, 4, -5);
     this.scene.add(rimLight);
   }
 
   private setupEnvironment(): void {
-    // Ground plate
+    // Heavy circular pedestal ground disc
     const groundGeo = new THREE.CircleGeometry(6, 48);
     const groundMesh = new THREE.Mesh(groundGeo, this.materials.ground);
     groundMesh.rotation.x = -Math.PI / 2;
@@ -137,179 +137,328 @@ export class SceneManager {
   }
 
   /**
-   * Procedural construction of 10 robotic assemblies corresponding 1:1
-   * with data/mock_telemetry_layout.json assembly identifiers.
+   * Procedural construction of 10 robotic assemblies structured according to
+   * the URDF (Unified Robot Description Format) / ROS REP-103 standard.
+   *
+   * Formats a hierarchical kinematic tree (parent -> child) using contiguous,
+   * interlocking mechanical links without air gaps or floating pieces.
    */
   private buildProceduralAssemblies(): void {
-    // Assembly 0: Base Mounting Platform
+    // =========================================================================
+    // Link 0: Base Mounting Platform (Root)
+    // =========================================================================
     const asm0 = new THREE.Group();
     asm0.name = 'assembly_00_base';
-    const baseCyl = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.8, 0.9, 0.25, 32),
+
+    // Octagonal/cylindrical floor pedestal: y from 0 to 0.18
+    const basePlate = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.85, 0.95, 0.18, 32),
       this.materials.chassis
     );
-    baseCyl.position.y = 0.125;
-    baseCyl.castShadow = true;
-    baseCyl.receiveShadow = true;
-    const baseCollar = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.65, 0.65, 0.1, 32),
+    basePlate.position.y = 0.09;
+    basePlate.castShadow = true;
+    basePlate.receiveShadow = true;
+
+    // Turntable bearing collar: y from 0.18 to 0.35
+    const baseTurntableCollar = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.58, 0.62, 0.17, 32),
       this.materials.joint
     );
-    baseCollar.position.y = 0.3;
-    baseCollar.castShadow = true;
-    asm0.add(baseCyl, baseCollar);
-    this.registerAssembly(asm0);
+    baseTurntableCollar.position.y = 0.265;
+    baseTurntableCollar.castShadow = true;
 
-    // Assembly 1: Azimuth Turret Rotating Joint
+    // Amber safety rim
+    const baseSafetyRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.75, 0.02, 16, 48),
+      this.materials.accentAmber
+    );
+    baseSafetyRing.rotation.x = Math.PI / 2;
+    baseSafetyRing.position.y = 0.18;
+
+    asm0.add(basePlate, baseTurntableCollar, baseSafetyRing);
+    this.registerAssembly(asm0);
+    this.scene.add(asm0);
+
+    // =========================================================================
+    // Link 1: Azimuth Turret Rotating Joint (Child of Link 0)
+    // Joint Origin: [0, 0.35, 0] relative to Base
+    // =========================================================================
     const asm1 = new THREE.Group();
     asm1.name = 'assembly_01_turret';
-    const turretBody = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.55, 0.6, 0.4, 32),
+    asm1.position.set(0, 0.35, 0);
+
+    // Rotating plinth flush with base collar
+    const turretPlinth = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.55, 0.55, 0.12, 32),
       this.materials.joint
     );
-    turretBody.castShadow = true;
-    const turretStanchion1 = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.45, 0.3),
-      this.materials.chassis
-    );
-    turretStanchion1.position.set(-0.25, 0.25, 0);
-    turretStanchion1.castShadow = true;
-    const turretStanchion2 = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.45, 0.3),
-      this.materials.chassis
-    );
-    turretStanchion2.position.set(0.25, 0.25, 0);
-    turretStanchion2.castShadow = true;
-    asm1.add(turretBody, turretStanchion1, turretStanchion2);
-    this.registerAssembly(asm1);
+    turretPlinth.position.y = 0.06;
+    turretPlinth.castShadow = true;
 
-    // Assembly 2: Shoulder Pitch Joint & Boom
+    // Dual upright fork stanchions cradling the shoulder axis at local y = 0.45
+    const leftStanchion = new THREE.Mesh(
+      new THREE.BoxGeometry(0.14, 0.42, 0.38),
+      this.materials.chassis
+    );
+    leftStanchion.position.set(-0.28, 0.27, 0);
+    leftStanchion.castShadow = true;
+
+    const rightStanchion = new THREE.Mesh(
+      new THREE.BoxGeometry(0.14, 0.42, 0.38),
+      this.materials.chassis
+    );
+    rightStanchion.position.set(0.28, 0.27, 0);
+    rightStanchion.castShadow = true;
+
+    // Turret center motor casing
+    const turretMotor = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.2, 0.28, 24),
+      this.materials.accentAmber
+    );
+    turretMotor.position.set(0, 0.2, -0.1);
+    turretMotor.castShadow = true;
+
+    asm1.add(turretPlinth, leftStanchion, rightStanchion, turretMotor);
+    this.registerAssembly(asm1);
+    asm0.add(asm1); // Hierarchical link
+
+    // =========================================================================
+    // Link 2: Shoulder Pitch Joint & Boom (Child of Link 1)
+    // Joint Origin: [0, 0.45, 0] relative to Turret (between fork stanchions)
+    // =========================================================================
     const asm2 = new THREE.Group();
     asm2.name = 'assembly_02_shoulder';
-    const shoulderPin = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.3, 0.3, 0.55, 24),
+    asm2.position.set(0, 0.45, 0);
+
+    // Transverse axle cylinder spanning between fork stanchions
+    const shoulderAxle = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.22, 0.58, 24),
       this.materials.joint
     );
-    shoulderPin.rotation.z = Math.PI / 2;
-    shoulderPin.castShadow = true;
-    const shoulderRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.32, 0.03, 16, 32),
+    shoulderAxle.rotation.z = Math.PI / 2;
+    shoulderAxle.castShadow = true;
+
+    // Main Upper Arm Boom (Link 2 body): extends along local +Y from 0 to 0.95!
+    const boomBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.24, 0.95, 0.22),
+      this.materials.chassis
+    );
+    boomBody.position.set(0, 0.475, 0);
+    boomBody.castShadow = true;
+
+    // Boom decorative side reinforcement plates
+    const boomPlateL = new THREE.Mesh(
+      new THREE.BoxGeometry(0.02, 0.85, 0.18),
       this.materials.accentAmber
     );
-    shoulderRing.rotation.y = Math.PI / 2;
-    shoulderRing.castShadow = true;
-    asm2.add(shoulderPin, shoulderRing);
-    this.registerAssembly(asm2);
+    boomPlateL.position.set(-0.13, 0.475, 0);
+    const boomPlateR = new THREE.Mesh(
+      new THREE.BoxGeometry(0.02, 0.85, 0.18),
+      this.materials.accentAmber
+    );
+    boomPlateR.position.set(0.13, 0.475, 0);
 
-    // Assembly 3: Elbow Pitch Joint & Arm Link
+    // Rear counterweight balancing the arm
+    const counterweight = new THREE.Mesh(
+      new THREE.BoxGeometry(0.36, 0.22, 0.3),
+      this.materials.chassis
+    );
+    counterweight.position.set(0, -0.08, -0.25);
+    counterweight.castShadow = true;
+
+    asm2.add(shoulderAxle, boomBody, boomPlateL, boomPlateR, counterweight);
+    this.registerAssembly(asm2);
+    asm1.add(asm2); // Hierarchical link
+
+    // =========================================================================
+    // Link 3: Elbow Pitch Joint (Child of Link 2)
+    // Joint Origin: [0, 0.95, 0] relative to Shoulder (at tip of Boom)
+    // =========================================================================
     const asm3 = new THREE.Group();
     asm3.name = 'assembly_03_elbow';
-    const elbowPin = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.26, 0.26, 0.48, 24),
+    asm3.position.set(0, 0.95, 0);
+
+    // Transverse elbow pivot cylinder
+    const elbowHinge = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.2, 0.46, 24),
       this.materials.joint
     );
-    elbowPin.rotation.z = Math.PI / 2;
-    elbowPin.castShadow = true;
-    const elbowTruss = new THREE.Mesh(
-      new THREE.BoxGeometry(0.2, 0.6, 0.2),
-      this.materials.chassis
-    );
-    elbowTruss.position.y = 0.3;
-    elbowTruss.castShadow = true;
-    asm3.add(elbowPin, elbowTruss);
-    this.registerAssembly(asm3);
+    elbowHinge.rotation.z = Math.PI / 2;
+    elbowHinge.castShadow = true;
 
-    // Assembly 4: Forearm Roll Actuator
+    // Elbow actuator housing
+    const elbowHousing = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.22, 0.22, 0.15, 24),
+      this.materials.accentAmber
+    );
+    elbowHousing.rotation.z = Math.PI / 2;
+    elbowHousing.position.set(0.2, 0, 0);
+    elbowHousing.castShadow = true;
+
+    asm3.add(elbowHinge, elbowHousing);
+    this.registerAssembly(asm3);
+    asm2.add(asm3); // Hierarchical link
+
+    // =========================================================================
+    // Link 4: Forearm Roll Actuator & Body (Child of Link 3)
+    // Joint Origin: [0, 0, 0] relative to Elbow
+    // =========================================================================
     const asm4 = new THREE.Group();
     asm4.name = 'assembly_04_forearm';
-    const forearmBody = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.24, 0.8, 24),
+    asm4.position.set(0, 0, 0);
+
+    // Forearm structural casing extending along local +Y from 0 to 0.85!
+    const forearmCasing = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.14, 0.2, 0.85, 24),
       this.materials.chassis
     );
-    forearmBody.castShadow = true;
-    const forearmBand = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.22, 0.22, 0.08, 24),
+    forearmCasing.position.set(0, 0.425, 0);
+    forearmCasing.castShadow = true;
+
+    // Forearm mid-band collar
+    const forearmCollar = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.17, 0.17, 0.08, 24),
       this.materials.accentAmber
     );
-    forearmBand.castShadow = true;
-    asm4.add(forearmBody, forearmBand);
-    this.registerAssembly(asm4);
+    forearmCollar.position.set(0, 0.425, 0);
+    forearmCollar.castShadow = true;
 
-    // Assembly 5: Wrist Pitch Gimbal
+    asm4.add(forearmCasing, forearmCollar);
+    this.registerAssembly(asm4);
+    asm3.add(asm4); // Hierarchical link
+
+    // =========================================================================
+    // Link 5: Wrist Pitch Gimbal (Child of Link 4)
+    // Joint Origin: [0, 0.85, 0] relative to Forearm (at tip of Forearm)
+    // =========================================================================
     const asm5 = new THREE.Group();
     asm5.name = 'assembly_05_wrist_pitch';
+    asm5.position.set(0, 0.85, 0);
+
+    // Outer pitch gimbal yoke
     const wristPitchYoke = new THREE.Mesh(
-      new THREE.BoxGeometry(0.22, 0.25, 0.2),
+      new THREE.BoxGeometry(0.24, 0.18, 0.2),
       this.materials.joint
     );
+    wristPitchYoke.position.set(0, 0.06, 0);
     wristPitchYoke.castShadow = true;
+
     asm5.add(wristPitchYoke);
     this.registerAssembly(asm5);
+    asm4.add(asm5); // Hierarchical link
 
-    // Assembly 6: Wrist Yaw Gimbal
+    // =========================================================================
+    // Link 6: Wrist Yaw Gimbal (Child of Link 5)
+    // Joint Origin: [0, 0.12, 0] relative to Wrist Pitch
+    // =========================================================================
     const asm6 = new THREE.Group();
     asm6.name = 'assembly_06_wrist_yaw';
+    asm6.position.set(0, 0.12, 0);
+
+    // Inner rotary gimbal hub
     const wristYawHub = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.16, 0.16, 0.2, 24),
+      new THREE.CylinderGeometry(0.12, 0.12, 0.12, 24),
       this.materials.joint
     );
+    wristYawHub.position.set(0, 0.05, 0);
     wristYawHub.castShadow = true;
+
     asm6.add(wristYawHub);
     this.registerAssembly(asm6);
+    asm5.add(asm6); // Hierarchical link
 
-    // Assembly 7: Wrist Roll Flange
+    // =========================================================================
+    // Link 7: Wrist Roll Flange (Child of Link 6)
+    // Joint Origin: [0, 0.10, 0] relative to Wrist Yaw
+    // =========================================================================
     const asm7 = new THREE.Group();
     asm7.name = 'assembly_07_wrist_roll';
+    asm7.position.set(0, 0.1, 0);
+
+    // Circular ISO tool face flange
     const wristRollFlange = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.15, 0.15, 0.08, 24),
+      new THREE.CylinderGeometry(0.14, 0.14, 0.04, 24),
       this.materials.accentAmber
     );
+    wristRollFlange.position.set(0, 0.02, 0);
     wristRollFlange.castShadow = true;
+
     asm7.add(wristRollFlange);
     this.registerAssembly(asm7);
+    asm6.add(asm7); // Hierarchical link
 
-    // Assembly 8: Multi-Jaw End Effector Tool
+    // =========================================================================
+    // Link 8: Multi-Jaw End Effector Tool (Child of Link 7)
+    // Joint Origin: [0, 0.04, 0] relative to Tool Flange
+    // =========================================================================
     const asm8 = new THREE.Group();
     asm8.name = 'assembly_08_end_effector';
+    asm8.position.set(0, 0.04, 0);
+
+    // Tool bracket base
     const toolBase = new THREE.Mesh(
-      new THREE.BoxGeometry(0.18, 0.06, 0.14),
+      new THREE.BoxGeometry(0.16, 0.05, 0.12),
       this.materials.chassis
     );
+    toolBase.position.set(0, 0.025, 0);
     toolBase.castShadow = true;
+
+    // Two parallel pneumatic gripper finger jaws
     const finger1 = new THREE.Mesh(
-      new THREE.BoxGeometry(0.03, 0.16, 0.04),
+      new THREE.BoxGeometry(0.025, 0.14, 0.035),
       this.materials.gripper
     );
-    finger1.position.set(-0.06, 0.1, 0);
+    finger1.position.set(-0.055, 0.095, 0);
     finger1.castShadow = true;
+
     const finger2 = new THREE.Mesh(
-      new THREE.BoxGeometry(0.03, 0.16, 0.04),
+      new THREE.BoxGeometry(0.025, 0.14, 0.035),
       this.materials.gripper
     );
-    finger2.position.set(0.06, 0.1, 0);
+    finger2.position.set(0.055, 0.095, 0);
     finger2.castShadow = true;
+
     asm8.add(toolBase, finger1, finger2);
     this.registerAssembly(asm8);
+    asm7.add(asm8); // Hierarchical link
 
-    // Assembly 9: High-Resolution Sensory Payload Pod
+    // =========================================================================
+    // Link 9: Sensory Payload Pod (Child of Link 8)
+    // Joint Origin: [0.08, 0.06, 0.08] bracket-mounted on Tool
+    // =========================================================================
     const asm9 = new THREE.Group();
     asm9.name = 'assembly_09_sensor_pod';
+    asm9.position.set(0.08, 0.06, 0.08);
+
+    // Optical inspection pod head
     const podSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.1, 24, 16),
-      this.materials.accentBlue
+      new THREE.SphereGeometry(0.08, 24, 16),
+      this.materials.chassis
     );
     podSphere.castShadow = true;
+
+    // Blue luminescent optical scanning lens ring
     const lensRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.08, 0.02, 16, 32),
-      this.materials.accentAmber
+      new THREE.TorusGeometry(0.06, 0.018, 16, 32),
+      this.materials.accentBlue
     );
+    lensRing.position.set(0, 0, 0.05);
     lensRing.castShadow = true;
-    asm9.add(podSphere, lensRing);
+
+    // Mounting bracket arm linking to gripper chassis
+    const podBracket = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.015, 0.015, 0.08, 12),
+      this.materials.joint
+    );
+    podBracket.rotation.z = Math.PI / 4;
+    podBracket.position.set(-0.03, -0.03, -0.03);
+
+    asm9.add(podSphere, lensRing, podBracket);
     this.registerAssembly(asm9);
+    asm8.add(asm9); // Hierarchical link
   }
 
   private registerAssembly(group: THREE.Group): void {
-    this.scene.add(group);
     this.assemblyObjects.set(group.name, group);
   }
 

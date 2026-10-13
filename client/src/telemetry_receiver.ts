@@ -78,10 +78,10 @@ export class TelemetryReceiver {
       const state: AssemblyTransformState = {
         assemblyId: id,
         name,
-        currentPos: new THREE.Vector3(0, 0, 0),
-        targetPos: new THREE.Vector3(0, 0, 0),
-        currentQuat: new THREE.Quaternion(0, 0, 0, 1),
-        targetQuat: new THREE.Quaternion(0, 0, 0, 1),
+        currentPos: mesh.position.clone(),
+        targetPos: mesh.position.clone(),
+        currentQuat: mesh.quaternion.clone(),
+        targetQuat: mesh.quaternion.clone(),
         mesh
       };
 
@@ -92,6 +92,11 @@ export class TelemetryReceiver {
       this.bindTransformChannel(`${id}_pos_x`, i, 'pos', 'x');
       this.bindTransformChannel(`${id}_pos_y`, i, 'pos', 'y');
       this.bindTransformChannel(`${id}_pos_z`, i, 'pos', 'z');
+      this.bindTransformChannel(`${id}_rot_qx`, i, 'rot', 'x');
+      this.bindTransformChannel(`${id}_rot_qy`, i, 'rot', 'y');
+      this.bindTransformChannel(`${id}_rot_qz`, i, 'rot', 'z');
+      this.bindTransformChannel(`${id}_rot_qw`, i, 'rot', 'w');
+      // Backward-compatible aliases
       this.bindTransformChannel(`${id}_rot_x`, i, 'rot', 'x');
       this.bindTransformChannel(`${id}_rot_y`, i, 'rot', 'y');
       this.bindTransformChannel(`${id}_rot_z`, i, 'rot', 'z');
