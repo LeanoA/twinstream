@@ -9,13 +9,17 @@
     "typecheck": "tsc --noEmit",
     "generate:layout": "tsx scripts/generate_telemetry_layout.ts",
     "simulate": "tsx simulator/physics_engine.ts",
-    "gateway": "tsx gateway/index.ts"
+    "gateway": "tsx gateway/index.ts",
+    "client": "npm run dev --prefix client",
+    "client:build": "npm run build --prefix client"
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
+    "@types/three": "^0.169.0",
     "@types/ws": "^8.18.2",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "three": "^0.169.0",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",
     "vitest": "^2.1.2"

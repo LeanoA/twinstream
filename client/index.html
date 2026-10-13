@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Digital Twin — Real-Time Telemetry Gateway</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0d1117;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
+      color: #c9d1d9;
+      user-select: none;
+    }
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    #hud-overlay {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 10;
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 14px 18px;
+      min-width: 280px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+    }
+    .hud-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #58a6ff;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .status-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .status-badge.connected {
+      background: rgba(46, 160, 67, 0.2);
+      border: 1px solid #2ea043;
+      color: #3fb950;
+    }
+    .status-badge.disconnected {
+      background: rgba(248, 81, 73, 0.2);
+      border: 1px solid #f85149;
+      color: #f85149;
+    }
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hud-label {
+      color: #8b949e;
+    }
+    .hud-value {
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+    .hud-footer {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #21262d;
+      font-size: 11px;
+      color: #6e7681;
+      display: flex;
+      justify-content: space-between;
+    }
+    #controls-hint {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      z-index: 10;
+      background: rgba(13, 17, 23, 0.7);
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #8b949e;
+      pointer-events: none;
+    }
+    #stats-container {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="stats-container"></div>
+  <div id="canvas-container"></div>
+
+  <div id="hud-overlay">
+    <div class="hud-title">
+      <span>Telemetry Gateway</span>
+      <span id="conn-status" class="status-badge disconnected">DISCONNECTED</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">Packet Sequence:</span>
+      <span id="metric-seq" class="hud-value">--</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">Deltas / Frame:</span>
+      <span id="metric-deltas" class="hud-value">--</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">Data Inflow Rate:</span>
+      <span id="metric-rate" class="hud-value">0.00 KB/s</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">Bandwidth Reduction:</span>
+      <span id="metric-reduction" class="hud-value" style="color: #3fb950;">-- %</span>
+    </div>
+    <div class="hud-footer">
+      <span>1,000 Channels Monitored</span>
+      <span>10 Assemblies (60 Hz)</span>
+    </div>
+  </div>
+
+  <div id="controls-hint">
+    Rotate: Left Click + Drag | Pan: Right Click + Drag | Zoom: Scroll
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
