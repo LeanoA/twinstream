@@ -44,7 +44,13 @@ export class PhysicsEngine {
     this.tickRateHz = options.tickRateHz ?? 100;
     this.periodNs = 1_000_000_000n / BigInt(this.tickRateHz);
 
-    const layoutFile = options.layoutPath ?? path.resolve(__dirname, '../data/mock_telemetry_layout.json');
+    const defaultLocalPath = path.resolve(__dirname, '../data/mock_telemetry_layout.json');
+    const defaultCwdPath = path.resolve(process.cwd(), 'data/mock_telemetry_layout.json');
+    const layoutFile =
+      options.layoutPath ??
+      process.env.LAYOUT_PATH ??
+      (fs.existsSync(defaultLocalPath) ? defaultLocalPath : defaultCwdPath);
+
     if (!fs.existsSync(layoutFile)) {
       throw new Error(`Telemetry layout file not found at: ${layoutFile}`);
     }

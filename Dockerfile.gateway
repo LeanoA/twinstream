@@ -1,0 +1,40 @@
+# ==============================================================================
+# Telemetry Gateway & Physics Simulator — Production Multi-Stage Containerfile
+# ==============================================================================
+
+# Stage 1: Build TypeScript into pure JavaScript
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY tsconfig.json ./
+COPY schema/ ./schema/
+COPY data/ ./data/
+COPY simulator/ ./simulator/
+COPY gateway/ ./gateway/
+
+RUN npx tsc
+
+# Stage 2: Minimal Production Runtime
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY data/ ./data/
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
+  CMD nc -z localhost 8080 || exit 1
+
+USER node
+
+CMD ["node", "dist/gateway/index.js"]
