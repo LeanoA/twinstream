@@ -40,7 +40,7 @@ describe('Phase 5 — Docker Topology & Container Specifications', () => {
 
     it('should expose port 8080 and declare healthcheck with unprivileged user', () => {
       expect(gatewayContent).toContain('EXPOSE 8080');
-      expect(gatewayContent).toContain('nc -z localhost 8080');
+      expect(gatewayContent).toMatch(/nc -z (127\.0\.0\.1|localhost) 8080/);
       expect(gatewayContent).toContain('USER node');
     });
   });
