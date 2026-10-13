@@ -10,6 +10,7 @@
     "generate:layout": "tsx scripts/generate_telemetry_layout.ts",
     "simulate": "tsx simulator/physics_engine.ts",
     "gateway": "tsx gateway/index.ts",
+    "benchmark": "tsx benchmarks/run_telemetry_benchmark.ts",
     "client": "npm run dev --prefix client",
     "client:build": "npm run build --prefix client"
   },
