@@ -84,4 +84,4 @@ Directly applying incoming streaming telemetry to WebGL scene graphs can induce 
 
 - [x] **TASK-P4-14**: Execute client build verification (`npm run build --prefix client`) and full test suite (`npm test`)
   - *Applicable Checks*: Client compiles with 0 errors; all test suites (including contracts, simulator, gateway, interpolator) pass 100%.
-  - *Evidence*: `npm run build --prefix client` and `npm run typecheck` passed with 0 errors; full suite `npm test` passed 31/31 tests across 4 files.
+  - *Evidence*: `npm run build --prefix client` and `npm run typecheck` passed with 0 errors; full suite `npm test` passed 31/31 tests across 4 files. Commit `4da2074`.
