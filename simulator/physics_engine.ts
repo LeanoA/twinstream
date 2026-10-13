@@ -186,117 +186,127 @@ export class PhysicsEngine {
       const aid = asm.assembly_id;
       const asmIndex = parseInt(aid.split('_')[1], 10);
       const phaseOffset = asmIndex * 0.4;
+      const isActiveArm = asmIndex === 1 || asmIndex === 2;
 
-      // Temperatures (35 - 80 C)
-      const baseTemp = 30.0 + asmIndex * 2.0;
-      this.setSignal(`${aid}_temp_motor_winding_01`, baseTemp + 15.0 * (0.5 + 0.5 * Math.sin(0.05 * t + phaseOffset)) + 5.0 * armSpeed);
-      this.setSignal(`${aid}_temp_motor_winding_02`, baseTemp + 14.5 * (0.5 + 0.5 * Math.sin(0.05 * t + phaseOffset)) + 4.8 * armSpeed);
-      this.setSignal(`${aid}_temp_motor_winding_03`, baseTemp + 15.2 * (0.5 + 0.5 * Math.sin(0.05 * t + phaseOffset)) + 5.1 * armSpeed);
-      this.setSignal(`${aid}_temp_motor_winding_04`, baseTemp + 13.8 * (0.5 + 0.5 * Math.sin(0.05 * t + phaseOffset)) + 4.5 * armSpeed);
+      // Realistic thermal dynamics: slow integration with high thermal mass (tau ~ 100s)
+      const baseTemp = 35.0 + asmIndex * 2.5;
+      const slowThermal = 8.0 * (0.5 + 0.5 * Math.sin(0.001 * t + phaseOffset));
+      this.setSignal(`${aid}_temp_motor_winding_01`, baseTemp + slowThermal);
+      this.setSignal(`${aid}_temp_motor_winding_02`, baseTemp - 0.5 + slowThermal);
+      this.setSignal(`${aid}_temp_motor_winding_03`, baseTemp + 0.4 + slowThermal);
+      this.setSignal(`${aid}_temp_motor_winding_04`, baseTemp - 1.0 + slowThermal);
 
-      this.setSignal(`${aid}_temp_bearing_01`, baseTemp - 5.0 + 8.0 * (0.5 + 0.5 * Math.cos(0.04 * t + phaseOffset)));
-      this.setSignal(`${aid}_temp_bearing_02`, baseTemp - 5.2 + 8.1 * (0.5 + 0.5 * Math.cos(0.04 * t + phaseOffset)));
-      this.setSignal(`${aid}_temp_bearing_03`, baseTemp - 4.8 + 7.9 * (0.5 + 0.5 * Math.cos(0.04 * t + phaseOffset)));
-      this.setSignal(`${aid}_temp_bearing_04`, baseTemp - 5.0 + 8.0 * (0.5 + 0.5 * Math.cos(0.04 * t + phaseOffset)));
+      this.setSignal(`${aid}_temp_bearing_01`, baseTemp - 6.0 + 4.0 * (0.5 + 0.5 * Math.cos(0.0008 * t + phaseOffset)));
+      this.setSignal(`${aid}_temp_bearing_02`, baseTemp - 6.2 + 4.1 * (0.5 + 0.5 * Math.cos(0.0008 * t + phaseOffset)));
+      this.setSignal(`${aid}_temp_bearing_03`, baseTemp - 5.8 + 3.9 * (0.5 + 0.5 * Math.cos(0.0008 * t + phaseOffset)));
+      this.setSignal(`${aid}_temp_bearing_04`, baseTemp - 6.0 + 4.0 * (0.5 + 0.5 * Math.cos(0.0008 * t + phaseOffset)));
 
-      this.setSignal(`${aid}_temp_gearbox_oil_01`, baseTemp - 2.0 + 10.0 * (0.5 + 0.5 * Math.sin(0.03 * t + phaseOffset)));
-      this.setSignal(`${aid}_temp_gearbox_oil_02`, baseTemp - 1.8 + 9.8 * (0.5 + 0.5 * Math.sin(0.03 * t + phaseOffset)));
+      this.setSignal(`${aid}_temp_gearbox_oil_01`, baseTemp - 3.0 + 5.0 * (0.5 + 0.5 * Math.sin(0.0006 * t + phaseOffset)));
+      this.setSignal(`${aid}_temp_gearbox_oil_02`, baseTemp - 1.8 + 4.8 * (0.5 + 0.5 * Math.sin(0.0006 * t + phaseOffset)));
 
-      // Current (phases A, B, C)
-      const currentMag = 5.0 + 18.0 * armSpeed;
-      this.setSignal(`${aid}_motor_current_phase_01`, currentMag * Math.sin(20.0 * t + phaseOffset));
-      this.setSignal(`${aid}_motor_current_phase_02`, currentMag * Math.sin(20.0 * t + phaseOffset + (2 * Math.PI) / 3));
-      this.setSignal(`${aid}_motor_current_phase_03`, currentMag * Math.sin(20.0 * t + phaseOffset + (4 * Math.PI) / 3));
+      // Current (phases A, B, C): dynamic on moving joints, standby quiescent current on idle
+      const currentMag = isActiveArm ? (4.0 + 15.0 * armSpeed) : 1.2;
+      this.setSignal(`${aid}_motor_current_phase_01`, currentMag * Math.sin(2.0 * t + phaseOffset));
+      this.setSignal(`${aid}_motor_current_phase_02`, currentMag * Math.sin(2.0 * t + phaseOffset + (2 * Math.PI) / 3));
+      this.setSignal(`${aid}_motor_current_phase_03`, currentMag * Math.sin(2.0 * t + phaseOffset + (4 * Math.PI) / 3));
 
-      // Bus Voltages (48V nominal)
-      this.setSignal(`${aid}_bus_voltage_01`, 48.0 + 1.2 * Math.sin(0.2 * t) - 0.2 * armSpeed);
-      this.setSignal(`${aid}_bus_voltage_02`, 47.9 + 1.1 * Math.cos(0.2 * t) - 0.2 * armSpeed);
+      // Bus Voltages (48V nominal: tightly regulated with sub-deadband ripple)
+      this.setSignal(`${aid}_bus_voltage_01`, 48.0 + 0.05 * Math.sin(0.1 * t));
+      this.setSignal(`${aid}_bus_voltage_02`, 47.95 + 0.05 * Math.cos(0.1 * t));
 
-      // Accelerometer vibrations
-      const vibBase = 0.5 * Math.sin(50.0 * t + phaseOffset) + 0.3 * Math.sin(120.0 * t);
-      this.setSignal(`${aid}_vibration_accel_x_01`, vibBase + 0.1 * Math.sin(250.0 * t));
+      // Accelerometer vibrations: motion harmonics on active joints, quiescent on stationary
+      const vibBase = isActiveArm ? (0.4 * Math.sin(8.0 * t + phaseOffset)) : 0.02;
+      this.setSignal(`${aid}_vibration_accel_x_01`, vibBase);
       this.setSignal(`${aid}_vibration_accel_x_02`, vibBase * 0.95);
       this.setSignal(`${aid}_vibration_accel_x_03`, vibBase * 1.05);
 
-      this.setSignal(`${aid}_vibration_accel_y_01`, vibBase * 0.8 + 0.2 * Math.cos(80.0 * t));
+      this.setSignal(`${aid}_vibration_accel_y_01`, vibBase * 0.8);
       this.setSignal(`${aid}_vibration_accel_y_02`, vibBase * 0.82);
       this.setSignal(`${aid}_vibration_accel_y_03`, vibBase * 0.78);
 
-      this.setSignal(`${aid}_vibration_accel_z_01`, vibBase * 1.1 + 0.2 * Math.sin(150.0 * t));
+      this.setSignal(`${aid}_vibration_accel_z_01`, vibBase * 1.1);
       this.setSignal(`${aid}_vibration_accel_z_02`, vibBase * 1.08);
       this.setSignal(`${aid}_vibration_accel_z_03`, vibBase * 1.12);
 
-      // Torque feedback
-      const torqueVal = (10.0 + 35.0 * armSpeed) * Math.sin(0.8 * Math.PI * t + phaseOffset);
+      // Torque feedback: dynamic under acceleration on active joints
+      const torqueVal = isActiveArm ? (8.0 + 30.0 * armSpeed) * Math.sin(0.8 * Math.PI * t + phaseOffset) : 2.0;
       this.setSignal(`${aid}_torque_feedback_01`, torqueVal);
       this.setSignal(`${aid}_torque_feedback_02`, torqueVal * 0.99);
 
-      // Strain gauges (12 channels)
+      // Strain gauges (12 channels): dynamic bending strain on active load boom (assembly 2)
       for (let s = 1; s <= 12; s++) {
         const sId = String(s).padStart(2, '0');
-        const strainVal = (40.0 + s * 10.0) * Math.sin(0.5 * Math.PI * t + phaseOffset * s);
+        const strainVal = (asmIndex === 2)
+          ? (30.0 + s * 8.0) * Math.sin(0.4 * Math.PI * t + phaseOffset * s)
+          : (15.0 + s * 2.0);
         this.setSignal(`${aid}_strain_gauge_${sId}`, strainVal);
       }
 
-      // Hydraulic pressures (6 channels)
+      // Hydraulic pressures (6 channels): active boom cylinder modulates, other lines steady
       for (let p = 1; p <= 6; p++) {
         const pId = String(p).padStart(2, '0');
-        const pressVal = 140.0 + 20.0 * Math.sin(0.3 * Math.PI * t + p);
+        const pressVal = (asmIndex === 2)
+          ? 140.0 + 15.0 * Math.sin(0.2 * Math.PI * t + p)
+          : 140.0;
         this.setSignal(`${aid}_pressure_hydraulic_${pId}`, pressVal);
       }
 
-      // Encoders (2 channels: wrapping pulse count)
-      const encoderTicks = Math.floor((t * 2000 + asmIndex * 500) % 65536);
+      // Encoders (2 channels: wrapping pulse count on rotating joints)
+      const encoderTicks = isActiveArm
+        ? Math.floor((t * 500 + asmIndex * 200) % 65536)
+        : asmIndex * 500;
       this.setSignal(`${aid}_encoder_raw_pulse_01`, encoderTicks);
       this.setSignal(`${aid}_encoder_raw_pulse_02`, (encoderTicks + 128) % 65536);
 
-      // Optical flow (4 channels)
+      // Optical flow (4 channels): active on payload sensor pod (assembly 9)
       for (let of = 1; of <= 4; of++) {
         const ofId = String(of).padStart(2, '0');
-        this.setSignal(`${aid}_optical_flow_sensor_${ofId}`, 50.0 * armSpeed * Math.sin(2.0 * t + of));
+        const flowVal = (asmIndex === 9) ? (30.0 * armSpeed * Math.sin(1.0 * t + of)) : 0.0;
+        this.setSignal(`${aid}_optical_flow_sensor_${ofId}`, flowVal);
       }
 
       // Acoustic emission (4 channels)
       for (let ac = 1; ac <= 4; ac++) {
         const acId = String(ac).padStart(2, '0');
-        this.setSignal(`${aid}_acoustic_emission_${acId}`, 35.0 + 15.0 * armSpeed + 2.0 * Math.sin(10.0 * t + ac));
+        const acousticVal = isActiveArm ? (35.0 + 10.0 * armSpeed) : 25.0;
+        this.setSignal(`${aid}_acoustic_emission_${acId}`, acousticVal);
       }
 
       // Magnetic flux (3 channels)
       for (let mf = 1; mf <= 3; mf++) {
         const mfId = String(mf).padStart(2, '0');
-        this.setSignal(`${aid}_magnetic_flux_${mfId}`, 45.0 + 5.0 * Math.sin(t + mf));
+        this.setSignal(`${aid}_magnetic_flux_${mfId}`, 45.0 + (isActiveArm ? 4.0 * Math.sin(0.5 * t + mf) : 0.0));
       }
 
       // Power draw (2 channels)
-      const power = 300.0 + 800.0 * armSpeed;
+      const power = isActiveArm ? (250.0 + 600.0 * armSpeed) : 40.0;
       this.setSignal(`${aid}_power_draw_01`, power);
       this.setSignal(`${aid}_power_draw_02`, power * 1.02);
 
       // Thermal flux (4 channels)
       for (let tf = 1; tf <= 4; tf++) {
         const tfId = String(tf).padStart(2, '0');
-        this.setSignal(`${aid}_thermal_flux_${tfId}`, 50.0 + 20.0 * armSpeed * Math.cos(0.1 * t + tf));
+        this.setSignal(`${aid}_thermal_flux_${tfId}`, 40.0 + (isActiveArm ? 15.0 * armSpeed : 2.0));
       }
 
-      // Moisture / humidity (2 channels)
-      this.setSignal(`${aid}_moisture_humidity_01`, 45.0 + 3.0 * Math.sin(0.01 * t));
-      this.setSignal(`${aid}_moisture_humidity_02`, 44.8 + 2.9 * Math.cos(0.01 * t));
+      // Moisture / humidity (2 channels: stable environmental baseline)
+      this.setSignal(`${aid}_moisture_humidity_01`, 45.0 + 0.5 * Math.sin(0.005 * t));
+      this.setSignal(`${aid}_moisture_humidity_02`, 44.8 + 0.5 * Math.cos(0.005 * t));
 
       // Harmonic distortion (2 channels)
-      this.setSignal(`${aid}_harmonic_distortion_01`, 1.5 + 0.8 * armSpeed);
-      this.setSignal(`${aid}_harmonic_distortion_02`, 1.4 + 0.75 * armSpeed);
+      this.setSignal(`${aid}_harmonic_distortion_01`, 1.5 + (isActiveArm ? 0.6 * armSpeed : 0.0));
+      this.setSignal(`${aid}_harmonic_distortion_02`, 1.4 + (isActiveArm ? 0.55 * armSpeed : 0.0));
 
       // Bus packet jitter & throughput
-      this.setSignal(`${aid}_bus_packet_jitter_01`, 12.0 + 4.0 * Math.sin(0.5 * t));
-      this.setSignal(`${aid}_bus_packet_jitter_02`, 11.5 + 3.8 * Math.cos(0.5 * t));
-      this.setSignal(`${aid}_bus_throughput_01`, 1200.0 + 400.0 * armSpeed);
-      this.setSignal(`${aid}_bus_throughput_02`, 1190.0 + 395.0 * armSpeed);
+      this.setSignal(`${aid}_bus_packet_jitter_01`, 12.0 + (isActiveArm ? 2.0 * Math.sin(0.2 * t) : 0.0));
+      this.setSignal(`${aid}_bus_packet_jitter_02`, 11.5 + (isActiveArm ? 1.8 * Math.cos(0.2 * t) : 0.0));
+      this.setSignal(`${aid}_bus_throughput_01`, 1200.0 + (isActiveArm ? 350.0 * armSpeed : 50.0));
+      this.setSignal(`${aid}_bus_throughput_02`, 1190.0 + (isActiveArm ? 340.0 * armSpeed : 50.0));
 
-      // Auxiliary spare channels (22 channels)
+      // Auxiliary spare channels (22 channels): stable unassigned baseline with physical grounding
       for (let sp = 1; sp <= 22; sp++) {
         const spId = String(sp).padStart(2, '0');
-        this.setSignal(`${aid}_aux_telemetry_spare_${spId}`, 10.0 * Math.sin(0.2 * t + sp));
+        this.setSignal(`${aid}_aux_telemetry_spare_${spId}`, 5.0 + (sp % 5) * 2.0);
       }
     }
   }
