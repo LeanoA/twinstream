@@ -11,47 +11,47 @@ export class SceneManager {
   private resizeObserver: ResizeObserver | null = null;
   private boundResizeHandler: () => void;
 
-  // Cached materials for zero-allocation rendering and uniform industrial aesthetics
+  // Cached materials for zero-allocation rendering and high-visibility industrial aesthetics
   private materials = {
     chassis: new THREE.MeshStandardMaterial({
-      color: 0x21262d,
-      roughness: 0.35,
-      metalness: 0.85
+      color: 0x3b4252,
+      roughness: 0.3,
+      metalness: 0.7
     }),
     joint: new THREE.MeshStandardMaterial({
-      color: 0x30363d,
-      roughness: 0.25,
-      metalness: 0.9
+      color: 0x64748b,
+      roughness: 0.2,
+      metalness: 0.85
     }),
     accentAmber: new THREE.MeshStandardMaterial({
-      color: 0xd97706,
-      roughness: 0.35,
-      metalness: 0.65
+      color: 0xf59e0b,
+      roughness: 0.3,
+      metalness: 0.5
     }),
     accentBlue: new THREE.MeshStandardMaterial({
       color: 0x38bdf8,
-      roughness: 0.2,
+      roughness: 0.15,
       metalness: 0.8,
       emissive: 0x0284c7,
-      emissiveIntensity: 0.7
+      emissiveIntensity: 1.0
     }),
     gripper: new THREE.MeshStandardMaterial({
-      color: 0x8b949e,
-      roughness: 0.15,
+      color: 0xcfd8dc,
+      roughness: 0.1,
       metalness: 0.95
     }),
     ground: new THREE.MeshStandardMaterial({
-      color: 0x161b22,
-      roughness: 0.85,
-      metalness: 0.15
+      color: 0x1e293b,
+      roughness: 0.7,
+      metalness: 0.3
     })
   };
 
   constructor(container: HTMLElement) {
     this.container = container;
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0d1117);
-    this.scene.fog = new THREE.FogExp2(0x0d1117, 0.035);
+    this.scene.background = new THREE.Color(0x13171f);
+    this.scene.fog = new THREE.FogExp2(0x13171f, 0.015);
 
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
@@ -95,29 +95,38 @@ export class SceneManager {
   }
 
   private setupLighting(): void {
-    const ambientLight = new THREE.AmbientLight(0x22272e, 1.8);
+    // 1. Hemisphere Light: Natural skylight + ground bounce
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 2.2);
+    hemiLight.position.set(0, 15, 0);
+    this.scene.add(hemiLight);
+
+    // 2. Ambient Light: Soft overall base illumination
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     this.scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
-    keyLight.position.set(5, 8, 4);
+    // 3. Key Light: Strong front-top directional light with soft shadows
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    keyLight.position.set(6, 10, 5);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
     keyLight.shadow.mapSize.height = 2048;
     keyLight.shadow.camera.near = 0.5;
-    keyLight.shadow.camera.far = 25;
-    keyLight.shadow.camera.left = -5;
-    keyLight.shadow.camera.right = 5;
-    keyLight.shadow.camera.top = 5;
-    keyLight.shadow.camera.bottom = -5;
-    keyLight.shadow.bias = -0.0005;
+    keyLight.shadow.camera.far = 30;
+    keyLight.shadow.camera.left = -6;
+    keyLight.shadow.camera.right = 6;
+    keyLight.shadow.camera.top = 6;
+    keyLight.shadow.camera.bottom = -6;
+    keyLight.shadow.bias = -0.0003;
     this.scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0x58a6ff, 0.9);
-    fillLight.position.set(-4, 3, -3);
+    // 4. Fill Light: Opposite side fill preventing pitch-black shadows
+    const fillLight = new THREE.DirectionalLight(0x93c5fd, 1.8);
+    fillLight.position.set(-6, 6, -3);
     this.scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xd97706, 0.6);
-    rimLight.position.set(0, 4, -5);
+    // 5. Back Rim Light: Highlights silhouettes and edge bevels
+    const rimLight = new THREE.DirectionalLight(0xfde68a, 1.5);
+    rimLight.position.set(2, 6, -6);
     this.scene.add(rimLight);
   }
 
@@ -131,7 +140,7 @@ export class SceneManager {
     this.scene.add(groundMesh);
 
     // Engineering grid helper
-    const grid = new THREE.GridHelper(10, 20, 0x30363d, 0x161b22);
+    const grid = new THREE.GridHelper(10, 20, 0x475569, 0x334155);
     grid.position.y = 0;
     this.scene.add(grid);
   }
