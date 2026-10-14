@@ -107,11 +107,26 @@ $$|\Delta s_i(t)| = |s_i(t) - s_i(t_{\text{last}})| > \epsilon_i$$
 
 When this condition is met, the channel update is serialized as a compact 2-element tuple:
 
-$$\tau_i = [\,\text{channel\_id}_i,\, s_i(t)\,]$$
+$$\tau_i = [\text{id}_i, s_i(t)]$$
 
-The resulting delta packet $\mathcal{P}_{\text{delta}}$ contains only the subset of active channels $\mathcal{A}(t) = \{i \mid |\Delta s_i(t)| > \epsilon_i\}$:
+where $\text{id}_i$ is the string identifier of channel $i$ and $s_i(t)$ is its current scalar value.
 
-$$\mathcal{P}_{\text{delta}}(t) = \left\{\, \text{timestamp}: t,\, \text{seq}: k,\, \text{deltas}: \bigcup_{i \in \mathcal{A}(t)} \tau_i \,\right\}$$
+The resulting delta packet $\mathcal{P}_{\text{delta}}$ transmits only the subset of active channels exceeding the deadband $\mathcal{A}(t) = \{i \mid |\Delta s_i(t)| > \epsilon_i\}$ alongside monotonic packet sequencing:
+
+$$\mathcal{P}_{\text{delta}}(t) = \left( t, k, \{ \tau_i \}_{i \in \mathcal{A}(t)} \right)$$
+
+In wire format over WebSockets, this maps directly to compact JSON:
+
+```json
+{
+  "timestamp": 1728905820123,
+  "seq": 42,
+  "deltas": [
+    ["assembly_01_turret_rot_qy", 0.7071],
+    ["assembly_02_shoulder_pos_y", 0.4500]
+  ]
+}
+```
 
 #### Quiescent vs. Dynamic Efficiency
 * In **steady state** (e.g. robotic arm stationary, holding position), $|\Delta s_i(t)| \le \epsilon_i$ for all $i$. $\mathcal{A}(t) = \emptyset$, and the delta payload drops to zero changes, reducing bandwidth consumption by **$99.57\%$**.
