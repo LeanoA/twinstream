@@ -196,9 +196,6 @@ export class TelemetryReceiver {
           this.metrics.connected = false;
           this.metrics.connectionMode = 'disconnected';
         }
-        if (this.socket) {
-          this.socket.close();
-        }
         if (this.enableWorkerFallback && !this.workerActive) {
           this.startWorker();
         }
