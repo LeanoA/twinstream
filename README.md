@@ -4,7 +4,7 @@
 [![Tests](https://img.shields.io/badge/Tests-51%2F51%20Passing%20(100%25)-brightgreen.svg)](#)
 [![Performance](https://img.shields.io/badge/Performance-60%20FPS%20%7C%20Zero--Allocation%20Render%20Loop-brightgreen.svg)](#)
 [![Bandwidth](https://img.shields.io/badge/Network-87.1%25%20Delta%20Compression-orange.svg)](#)
-[![Demo](https://img.shields.io/badge/Demo-Autonomous%20Web%20Worker%20Fallback-success.svg)](#)
+[![Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success.svg)](https://leanoa.github.io/twinstream/)
 [![Kinematics](https://img.shields.io/badge/Kinematics-URDF--Inspired%20%7C%20Three.js%20%2BY-blueviolet.svg)](#)
 [![SDLC](https://img.shields.io/badge/SDLC-Spec--Driven%20Development%20(SDD)-purple.svg)](#)
 
@@ -24,6 +24,12 @@ A battle-tested reference architecture demonstrating how to decouple continuous,
 ---
 
 ## 🚀 Quickstart
+
+### 0. 🌐 Instant Interactive Web Demo (Zero Setup)
+Test the interactive 3D digital twin directly in your browser without spinning up local servers or Docker containers:
+👉 **[https://leanoa.github.io/twinstream/](https://leanoa.github.io/twinstream/)**
+
+*(Static deployment runs on an autonomous background Web Worker computing URDF forward kinematics and deadband delta compression at 60 FPS, completely freeing the main thread for GPU draw calls).*
 
 ### 1. Production Mode (Docker Compose)
 To launch the complete containerized stack with zero host dependencies:

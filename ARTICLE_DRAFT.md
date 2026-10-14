@@ -363,7 +363,7 @@ Don't serve production WebGL client bundles from Node.js runtime servers. Node c
 You can test and inspect this architecture through two deployment modes:
 
 ### 1. Instant Interactive Web Demo (GitHub Pages)
-For an immediate, zero-setup interactive evaluation, visit the hosted GitHub Pages deployment. When no live gateway is detected, the application automatically boots the background Web Worker fallback—delivering fluid 60 FPS articulation, URDF kinematics, and live deadband metrics directly in your browser with an explicit visual demo disclaimer.
+For an immediate, zero-setup interactive evaluation, launch the hosted 3D digital twin: **[https://leanoa.github.io/twinstream/](https://leanoa.github.io/twinstream/)**. The browser automatically boots the background Web Worker fallback—delivering fluid 60 FPS articulation, URDF kinematics, and live deadband metrics directly in your browser with an explicit visual demo disclaimer.
 
 ### 2. Full Decoupled Production Pipeline (Local Docker)
 To experience the true multi-process decoupled architecture—where the continuous $100\text{ Hz}$ physics simulation runs in one process, the Node.js gateway compresses and streams deltas over WebSockets, and the Nginx Alpine container serves the WebGL visualizer:
