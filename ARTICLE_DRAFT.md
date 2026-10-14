@@ -18,6 +18,7 @@ In this deep dive, we walk through an end-to-end, production-grade reference arc
 * **Rock-solid 60 FPS WebGL rendering:** Reduced telemetry processing budget consumption from $1.39\%$ to $0.09\%$ of the $16.67\text{ ms}$ frame window, freeing up $99.9\%$ of the main thread for Three.js render calls and zero-allocation SLERP interpolation.
 * **Microservice container efficiency:** Deployed the Three.js client as an ultra-lightweight Nginx Alpine container ($< 30\text{ MB}$) and the Node.js 22 telemetry gateway as an unprivileged containerized service.
 * **Strict kinematic fidelity:** Modeled a 10-assembly contiguous articulated robot using a hierarchical kinematic tree (URDF/ROS-inspired) with robotics frame and link nomenclatures informed by **ISO 9787** and SI unit conventions from **ROS REP-103**, mapped to WebGL's coordinate space.
+* **Dual-mode telemetry ingestion:** Built an autonomous background Web Worker fallback so public evaluators can test the 60 FPS digital twin immediately on static hosting (e.g., GitHub Pages) with an explicit visual demo disclaimer, without requiring a live backend server.
 
 ---
 
@@ -275,6 +276,31 @@ export class TelemetryReceiver {
 }
 ```
 
+### 3.3 Autonomous In-Browser Web Worker Fallback (Dual-Mode Ingestion)
+
+When publishing engineering portfolio case studies to static hosts (such as GitHub Pages), running continuous Node.js backend servers and persistent WebSocket gateways introduces infrastructure overhead and cold-start friction.
+
+To solve this, the client implements **Dual-Mode Ingestion** (`client/src/telemetry_receiver.ts`):
+
+1. **Live Gateway Mode:** The client attempts to open a WebSocket connection to the production Node.js gateway.
+2. **Autonomous Worker Fallback:** If the socket connection fails or times out (1,500 ms), the client automatically spawns an isolated background Web Worker (`client/src/workers/telemetry_worker.ts`).
+
+```typescript
+// Client-side fallback initialization (telemetry_receiver.ts)
+if (!this.worker && typeof Worker !== 'undefined') {
+  this.worker = new Worker(new URL('./workers/telemetry_worker.ts', import.meta.url), {
+    type: 'module'
+  });
+  this.worker.onmessage = (event: MessageEvent) => {
+    if (event.data.type === 'delta') {
+      this.applyDeltaPacket(event.data.payload, event.data.byteLength);
+    }
+  };
+}
+```
+
+The Web Worker runs forward kinematics and deadband delta compression in an isolated background thread, emitting compact delta packets into the client's `updateTransforms()` loop. The main UI thread remains **100% unblocked** for Three.js WebGL draw calls at 60 FPS, while the HUD displays an unambiguous **`DEMO (WORKER)`** status badge and a visual disclaimer notice.
+
 ---
 
 ## 4. Empirical Benchmarks: Monolithic Streaming vs. Decoupled Delta Compression
@@ -332,9 +358,28 @@ Don't serve production WebGL client bundles from Node.js runtime servers. Node c
 
 ---
 
-## 🚀 Explore the Code & Connect
+## 🚀 Explore the Code, Live Demo & Deployment Options
 
-The complete, reproducible open-source implementation—including the physics simulation engine, Node.js WebSocket gateway with delta compression, Three.js client, and benchmarking suite—is available on GitHub:
+You can test and inspect this architecture through two deployment modes:
+
+### 1. Instant Interactive Web Demo (GitHub Pages)
+For an immediate, zero-setup interactive evaluation, visit the hosted GitHub Pages deployment. When no live gateway is detected, the application automatically boots the background Web Worker fallback—delivering fluid 60 FPS articulation, URDF kinematics, and live deadband metrics directly in your browser with an explicit visual demo disclaimer.
+
+### 2. Full Decoupled Production Pipeline (Local Docker)
+To experience the true multi-process decoupled architecture—where the continuous $100\text{ Hz}$ physics simulation runs in one process, the Node.js gateway compresses and streams deltas over WebSockets, and the Nginx Alpine container serves the WebGL visualizer:
+
+```bash
+# Clone and spin up the complete containerized stack
+git clone https://github.com/alexander-leano/scientific-compute-modernization-lab.git
+cd scientific-compute-modernization-lab/portfolio_lab/case-03-realtime-3d-telemetry
+docker compose up --build
+```
+Open `http://localhost:8080` to inspect live WebSocket streaming and delta compression metrics.
+
+### 3. Architecture Roadmap
+* **Cloud-Hosted Live Backend:** A fully managed cloud backend deployment with autoscaling WebSockets and multi-tenant telemetry distribution is planned for a future release to provide a persistent, globally accessible live stream.
+
+---
 
 * **GitHub Repository:** [https://github.com/alexander-leano/scientific-compute-modernization-lab](https://github.com/alexander-leano/scientific-compute-modernization-lab) *(Case 03 Reference)*
 * **Connect on LinkedIn:** [linkedin.com/in/alexander-leano](https://linkedin.com/in/alexander-leano)

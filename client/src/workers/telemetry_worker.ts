@@ -219,11 +219,11 @@ export class InBrowserPhysicsWorker {
 
     // 8: End Effector (tool pitch)
     const pitch8 = 0.15 * Math.sin(1.8 * Math.PI * t);
-    this.setKinematics('assembly_08_end_effector', [0, 0.08, 0], fromAxisAngle([1, 0, 0], pitch8));
+    this.setKinematics('assembly_08_end_effector', [0, 0.04, 0], fromAxisAngle([1, 0, 0], pitch8));
 
     // 9: Sensor Pod (scanner yaw)
     const yaw9 = 0.3 * Math.cos(1.5 * Math.PI * t);
-    this.setKinematics('assembly_09_sensor_pod', [0, 0.06, 0], fromAxisAngle([0, 1, 0], yaw9));
+    this.setKinematics('assembly_09_sensor_pod', [0.08, 0.06, 0.08], fromAxisAngle([0, 1, 0], yaw9));
 
     // Auxiliary channel variations
     for (let i = 0; i < ASSEMBLIES.length; i++) {
