@@ -4,6 +4,7 @@ import { ReceiverMetrics } from './types';
 export class HudManager {
   private stats: Stats;
   private statusEl: HTMLElement | null;
+  private disclaimerEl: HTMLElement | null;
   private seqEl: HTMLElement | null;
   private deltasEl: HTMLElement | null;
   private rateEl: HTMLElement | null;
@@ -25,6 +26,7 @@ export class HudManager {
     }
 
     this.statusEl = document.getElementById('conn-status');
+    this.disclaimerEl = document.getElementById('demo-disclaimer');
     this.seqEl = document.getElementById('metric-seq');
     this.deltasEl = document.getElementById('metric-deltas');
     this.rateEl = document.getElementById('metric-rate');
@@ -50,16 +52,23 @@ export class HudManager {
     this.lastDomUpdateTime = now;
 
     if (this.statusEl) {
-      if (metrics.connected) {
-        if (!this.statusEl.classList.contains('connected')) {
-          this.statusEl.className = 'status-badge connected';
-          this.statusEl.textContent = 'CONNECTED';
-        }
+      if (metrics.connectionMode === 'websocket') {
+        this.statusEl.className = 'status-badge connected';
+        this.statusEl.textContent = 'LIVE GATEWAY';
+      } else if (metrics.connectionMode === 'worker') {
+        this.statusEl.className = 'status-badge demo';
+        this.statusEl.textContent = 'DEMO (WORKER)';
       } else {
-        if (!this.statusEl.classList.contains('disconnected')) {
-          this.statusEl.className = 'status-badge disconnected';
-          this.statusEl.textContent = 'DISCONNECTED';
-        }
+        this.statusEl.className = 'status-badge disconnected';
+        this.statusEl.textContent = 'DISCONNECTED';
+      }
+    }
+
+    if (this.disclaimerEl) {
+      if (metrics.connectionMode === 'worker') {
+        this.disclaimerEl.classList.remove('hidden');
+      } else {
+        this.disclaimerEl.classList.add('hidden');
       }
     }
 

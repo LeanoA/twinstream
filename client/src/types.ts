@@ -18,8 +18,11 @@ export interface AssemblyTransformState {
   mesh: THREE.Object3D;
 }
 
+export type ConnectionMode = 'websocket' | 'worker' | 'disconnected';
+
 export interface ReceiverMetrics {
   connected: boolean;
+  connectionMode: ConnectionMode;
   seq: number;
   lastDeltaCount: number;
   bytesPerSecond: number;

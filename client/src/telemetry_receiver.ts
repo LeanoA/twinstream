@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {
   AssemblyTransformState,
   ChannelTargetSlot,
+  ConnectionMode,
   DeltaPacketPayload,
   FullStatePayload,
   ReceiverMetrics
@@ -12,6 +13,9 @@ export interface TelemetryReceiverOptions {
   lerpAlpha?: number;
   slerpAlpha?: number;
   uncompressedFrameBytes?: number;
+  enableWorkerFallback?: boolean;
+  connectionTimeoutMs?: number;
+  workerFactory?: () => Worker;
 }
 
 export class TelemetryReceiver {
@@ -19,8 +23,14 @@ export class TelemetryReceiver {
   private lerpAlpha: number;
   private slerpAlpha: number;
   private uncompressedFrameBytes: number;
+  private enableWorkerFallback: boolean;
+  private connectionTimeoutMs: number;
+  private workerFactory?: () => Worker;
 
   private socket: WebSocket | null = null;
+  private worker: Worker | null = null;
+  private workerActive = false;
+  private connectionTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private isDestroyed = false;
 
@@ -31,6 +41,7 @@ export class TelemetryReceiver {
   // Diagnostics and bandwidth metrics
   private metrics: ReceiverMetrics = {
     connected: false,
+    connectionMode: 'disconnected',
     seq: 0,
     lastDeltaCount: 0,
     bytesPerSecond: 0,
@@ -47,6 +58,9 @@ export class TelemetryReceiver {
     this.slerpAlpha = options.slerpAlpha ?? 0.25;
     // Estimated uncompressed full-state JSON payload size (~49.4 KB)
     this.uncompressedFrameBytes = options.uncompressedFrameBytes ?? 49400;
+    this.enableWorkerFallback = options.enableWorkerFallback ?? true;
+    this.connectionTimeoutMs = options.connectionTimeoutMs ?? 1500;
+    this.workerFactory = options.workerFactory;
   }
 
   /**
@@ -118,13 +132,44 @@ export class TelemetryReceiver {
   }
 
   public connect(): void {
-    if (this.isDestroyed || typeof WebSocket === 'undefined') return;
+    if (this.isDestroyed) return;
+
+    if (typeof WebSocket === 'undefined') {
+      if (this.enableWorkerFallback) {
+        this.startWorker();
+      }
+      return;
+    }
+
+    if (this.connectionTimer) {
+      clearTimeout(this.connectionTimer);
+      this.connectionTimer = null;
+    }
+
+    // Set fallback timeout if worker fallback is enabled
+    if (this.enableWorkerFallback && !this.workerActive && this.metrics.connectionMode !== 'websocket') {
+      this.connectionTimer = setTimeout(() => {
+        this.connectionTimer = null;
+        if (this.metrics.connectionMode !== 'websocket') {
+          console.info(`[TelemetryReceiver] WebSocket connection timed out after ${this.connectionTimeoutMs}ms. Activating autonomous Web Worker fallback.`);
+          this.startWorker();
+        }
+      }, this.connectionTimeoutMs);
+    }
 
     try {
       this.socket = new WebSocket(this.url);
 
       this.socket.onopen = () => {
+        if (this.connectionTimer) {
+          clearTimeout(this.connectionTimer);
+          this.connectionTimer = null;
+        }
+        if (this.workerActive) {
+          this.stopWorker();
+        }
         this.metrics.connected = true;
+        this.metrics.connectionMode = 'websocket';
       };
 
       this.socket.onmessage = (event: MessageEvent) => {
@@ -132,18 +177,110 @@ export class TelemetryReceiver {
       };
 
       this.socket.onclose = () => {
-        this.metrics.connected = false;
+        if (this.metrics.connectionMode === 'websocket') {
+          this.metrics.connected = false;
+          this.metrics.connectionMode = 'disconnected';
+        }
+        if (this.enableWorkerFallback && !this.workerActive) {
+          this.startWorker();
+        }
         this.scheduleReconnect();
       };
 
       this.socket.onerror = () => {
-        this.metrics.connected = false;
+        if (this.connectionTimer) {
+          clearTimeout(this.connectionTimer);
+          this.connectionTimer = null;
+        }
+        if (this.metrics.connectionMode === 'websocket') {
+          this.metrics.connected = false;
+          this.metrics.connectionMode = 'disconnected';
+        }
         if (this.socket) {
           this.socket.close();
         }
+        if (this.enableWorkerFallback && !this.workerActive) {
+          this.startWorker();
+        }
       };
     } catch {
+      if (this.connectionTimer) {
+        clearTimeout(this.connectionTimer);
+        this.connectionTimer = null;
+      }
+      if (this.enableWorkerFallback && !this.workerActive) {
+        this.startWorker();
+      }
       this.scheduleReconnect();
+    }
+  }
+
+  public startWorker(): void {
+    if (this.workerActive || this.isDestroyed) return;
+
+    if (!this.worker) {
+      if (this.workerFactory) {
+        this.worker = this.workerFactory();
+      } else if (typeof Worker !== 'undefined') {
+        try {
+          this.worker = new Worker(new URL('./workers/telemetry_worker.ts', import.meta.url), {
+            type: 'module'
+          });
+        } catch (err) {
+          console.warn('[TelemetryReceiver] Failed to initialize Web Worker fallback:', err);
+          return;
+        }
+      } else {
+        return;
+      }
+
+      this.worker.onmessage = (event: MessageEvent) => {
+        if (!this.workerActive) return;
+        const msg = event.data;
+        if (!msg) return;
+
+        if (msg.type === 'snapshot' && msg.payload) {
+          this.applyFullState(msg.payload);
+          this.bytesAccumulator += msg.byteLength || 0;
+          this.updateDataRate();
+        } else if (msg.type === 'delta' && msg.payload) {
+          this.applyDeltaPacket(msg.payload, msg.byteLength);
+          this.bytesAccumulator += msg.byteLength || 0;
+          this.updateDataRate();
+        }
+      };
+    }
+
+    this.workerActive = true;
+    this.metrics.connected = true;
+    this.metrics.connectionMode = 'worker';
+    this.worker.postMessage({ action: 'start' });
+  }
+
+  public stopWorker(): void {
+    if (!this.workerActive) return;
+    this.workerActive = false;
+    if (this.worker) {
+      this.worker.postMessage({ action: 'stop' });
+    }
+    if (this.metrics.connectionMode === 'worker') {
+      this.metrics.connected = false;
+      this.metrics.connectionMode = 'disconnected';
+    }
+  }
+
+  public toggleMode(): ConnectionMode {
+    if (this.metrics.connectionMode === 'worker') {
+      this.stopWorker();
+      this.connect();
+      return this.metrics.connectionMode;
+    } else {
+      if (this.socket) {
+        this.socket.close();
+        this.socket = null;
+      }
+      this.startWorker();
+      return this.metrics.connectionMode;
     }
   }
 
@@ -172,6 +309,12 @@ export class TelemetryReceiver {
     if (parsed.channels && typeof parsed.channels === 'object') {
       // Full state snapshot baseline
       this.applyFullState(parsed as FullStatePayload);
+    } else if (parsed.signals && typeof parsed.signals === 'object') {
+      // Dual naming support if gateway sends 'signals'
+      this.applyFullState({
+        timestamp: parsed.timestamp || Date.now(),
+        channels: parsed.signals
+      });
     } else if (parsed.deltas && Array.isArray(parsed.deltas)) {
       // High-frequency delta packet
       this.applyDeltaPacket(parsed as DeltaPacketPayload, byteLength);
@@ -183,7 +326,7 @@ export class TelemetryReceiver {
    * avoiding initial interpolation snap or visual delay.
    */
   public applyFullState(payload: FullStatePayload): void {
-    const channels = payload.channels;
+    const channels = payload.channels || (payload as any).signals || {};
     for (const channelId in channels) {
       const slot = this.channelIndex.get(channelId);
       if (!slot) continue;
@@ -293,6 +436,10 @@ export class TelemetryReceiver {
 
   public disconnect(): void {
     this.isDestroyed = true;
+    if (this.connectionTimer) {
+      clearTimeout(this.connectionTimer);
+      this.connectionTimer = null;
+    }
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
@@ -301,6 +448,13 @@ export class TelemetryReceiver {
       this.socket.close();
       this.socket = null;
     }
+    if (this.worker) {
+      this.worker.postMessage({ action: 'stop' });
+      this.worker.terminate();
+      this.worker = null;
+    }
+    this.workerActive = false;
     this.metrics.connected = false;
+    this.metrics.connectionMode = 'disconnected';
   }
 }
