@@ -16,7 +16,7 @@ A battle-tested reference architecture demonstrating how to decouple continuous,
 * **$87.1\%$ Bandwidth Reduction:** Cut dynamic streaming volume from $14.42\text{ MB}$ down to $1.87\text{ MB}$ over 5s ($2,954\text{ KB/s} \to 382\text{ KB/s}$); $> 99.5\%$ reduction during stationary hold ($12.4\text{ KB/s}$).
 * **$15\times$ Faster V8 Deserialization:** Reduced client JSON parsing latency from $231.4\ \mu\text{s}$ to $15.5\ \mu\text{s}$ per broadcast packet.
 * **Rock-Solid 60 FPS WebGL Rendering:** Slashed telemetry frame-budget consumption from $1.39\%$ to $0.09\%$ of the $16.67\text{ ms}$ render window, freeing up $99.9\%$ of the main thread for GPU draw calls and zero-allocation SLERP interpolation.
-* **Robotics Standard Compliance:** Modeled an articulated 10-assembly robot following **ISO 9787** and **ROS REP-103** coordinate conventions with contiguous mechanical links.
+* **Robotics Kinematic Fidelity:** Modeled an articulated 10-assembly robot using a URDF-inspired hierarchical scene graph, standard robotics nomenclatures (ISO 9787 frames), and ROS REP-103 metric conventions with contiguous mechanical links.
 * **Production Docker Topology:** Orchestrated via Docker Compose with an unprivileged Node 22 Alpine gateway and an ultra-lightweight Nginx Alpine web server ($< 30\text{ MB}$ image).
 
 ---

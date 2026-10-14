@@ -10,7 +10,7 @@ Welcome to the technical documentation for the **Decoupled 3D Digital Twin & Hig
 Detailed records of all major engineering decisions, technical tradeoffs, and architectural consequences:
 * **ADR-01**: Three-Tier Decoupled Pipeline (Physics vs. Gateway vs. WebGL).
 * **ADR-02**: Deadband Delta Compression with Compact Tuples.
-* **ADR-03**: ROS REP-103 & ISO 9787 Hierarchical Scene Graph.
+* **ADR-03**: URDF Kinematic Hierarchy & Robotics Frame Conventions.
 * **ADR-04**: Quaternion $\mathbb{H}$ SLERP with Antipodal Dot Product Correction.
 * **ADR-05**: Zero-Allocation In-Place WebGL Render Loop.
 * **ADR-06**: Containerized Microservices: Nginx Alpine (< 30 MB) + Node 22 Alpine Unprivileged.

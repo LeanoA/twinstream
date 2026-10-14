@@ -41,17 +41,17 @@ Implement the `DeltaCompressor` class using deadband threshold filtering:
 
 ---
 
-## ADR-03: ROS REP-103 & ISO 9787 Hierarchical Scene Graph
+## ADR-03: URDF Kinematic Hierarchy & Robotics Frame Conventions
 
 ### Context & Problem
 Initial 3D rendering implementations rendered independent meshes in world space. When joint telemetry was applied, mechanical links disconnected and appeared to "float in mid-air," violating mechanical robotics reality.
 
 ### Decision
-Model the 10-assembly robotic arm as a contiguous kinematic hierarchy conforming to:
-* **ISO 9787 (Manipulating Industrial Robots — Coordinate Systems and Motion Nomenclatures)**: Contiguous mechanical links connected by revolute and prismatic joints.
-* **ROS REP-103 (Standard Units of Measure and Coordinate Conventions)**:
+Model the 10-assembly robotic arm as a contiguous parent-child kinematic hierarchy modeled after the **URDF** (Unified Robot Description Format) standard, incorporating:
+* **ISO 9787 Nomenclatures**: Link and frame naming conventions aligned with standard industrial manipulators (World, Base, Wrist Flange, End-Effector / Tool Center Point).
+* **ROS REP-103 Unit Conventions**:
   - Metric units: meters ($\text{m}$), radians ($\text{rad}$), seconds ($\text{s}$).
-  - Coordinate orientation: $+X$ forward, $+Y$ left, $+Z$ up (or Three.js standard $+Y$ up, $+Z$ forward).
+  - Coordinate frame adaptation: ROS and ISO 9787 specify $+Z$-up; for WebGL / Three.js native rendering, frames are mapped to right-handed $+Y$-up while preserving relative joint rotation axes and parent-child kinematic transformations.
   - Kinematic Tree: $\text{Base} \to \text{Turret} \to \text{Shoulder} \to \text{Elbow} \to \text{Forearm} \to \text{WristPitch} \to \text{WristYaw} \to \text{WristRoll} \to \text{EndEffector} \to \text{SensorPod}$.
 
 ### Consequences

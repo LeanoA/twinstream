@@ -63,7 +63,7 @@ Rendering a complex 3D robotic arm as flat, independent meshes in world space an
 ### Why It Fails
 Real-world physical mechanisms are contiguous linkages. In early iterations, when rotation telemetry was applied to the base or shoulder, child links (elbow, forearm, wrist) remained at their original world coordinates, appearing as **floating, disconnected pieces hovering in mid-air**.
 
-### The Solution: Grounding in ROS REP-103 & ISO 9787 Hierarchical Trees
+### The Solution: Grounding in URDF Kinematic Trees & Robotics Conventions
 1. Construct a proper **scene graph hierarchy** where each child mesh is appended to its parent link (`parent.add(child)`).
 2. Define local offsets at mechanical pivot points (origins).
 3. Let Three.js evaluate the forward kinematics tree automatically via `scene.updateMatrixWorld()`.
