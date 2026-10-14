@@ -2,6 +2,7 @@
 
 [![Stack](https://img.shields.io/badge/Stack-Three.js%20%7C%20TypeScript%20%7C%20Node.js%20WebSockets%20%7C%20Vite%20%7C%20Docker-blue.svg)](#)
 [![Tests](https://img.shields.io/badge/Tests-51%2F51%20Passing%20(100%25)-brightgreen.svg)](#)
+[![CI / CD](https://github.com/LeanoA/twinstream/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/LeanoA/twinstream/actions/workflows/deploy-pages.yml)
 [![Performance](https://img.shields.io/badge/Performance-60%20FPS%20%7C%20Zero--Allocation%20Render%20Loop-brightgreen.svg)](#)
 [![Bandwidth](https://img.shields.io/badge/Network-87.1%25%20Delta%20Compression-orange.svg)](#)
 [![Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success.svg)](https://leanoa.github.io/twinstream/)

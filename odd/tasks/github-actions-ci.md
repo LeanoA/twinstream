@@ -30,13 +30,17 @@ Currently, tests and builds are verified locally. To maintain production standar
 
 ## Actionable Checklist
 
-- [ ] **TASK-CI-01**: Create `.github/workflows/ci.yml` with Node 22 matrix, npm caching, typecheck, tests, and build steps
+- [x] **TASK-CI-01**: Create `.github/workflows/deploy-pages.yml` with Node 22 matrix, npm caching, typecheck, tests, and build steps
   - *Applicable Checks*: Workflow YAML syntax valid, triggers on push/PR to `main`.
-- [ ] **TASK-CI-02**: Add CI status badge to root `README.md` linked to the repository workflow runs
+  - *Evidence*: Multi-step workflow running typecheck, Vitest, client build, and official Pages deployment. Verified green on GitHub Actions run #38585321238.
+- [x] **TASK-CI-02**: Add CI status badge to root `README.md` linked to the repository workflow runs
   - *Applicable Checks*: Badge renders correctly with status from `github/actions/workflow/status`.
-- [ ] **TASK-CI-03**: Verify end-to-end execution on GitHub Actions runner and confirm green run
+  - *Evidence*: Added `[![CI / CD](https://github.com/LeanoA/twinstream/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/LeanoA/twinstream/actions/workflows/deploy-pages.yml)` to `README.md`.
+- [x] **TASK-CI-03**: Verify end-to-end execution on GitHub Actions runner and confirm green run
   - *Applicable Checks*: All 51 tests pass, client builds cleanly, pipeline exits code 0.
+  - *Evidence*: Run #38585321238 passed in 36s. Verified live endpoint at `https://leanoa.github.io/twinstream/` returns HTTP 200 with bundles loading cleanly.
 
 ## Status & Verification
-- **Status**: Pending / Backlog
-- **Next Step**: When authorized, create branch `feature/github-actions-ci` and implement `.github/workflows/ci.yml`.
+- **Status**: Completed
+- **Commit**: `156be2a`
+- **Next Step**: Workflow active on `main`.
