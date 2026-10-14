@@ -164,8 +164,8 @@ graph TD
     Forearm --> WristPitch["Wrist Pitch Joint (Pitch: X-axis)\nOffset: [0, 0.85, 0]"]
     WristPitch --> WristYaw["Wrist Yaw Joint (Yaw: Y-axis)\nOffset: [0, 0.12, 0]"]
     WristYaw --> WristRoll["Wrist Roll Joint (Roll: Z-axis)\nOffset: [0, 0.10, 0]"]
-    WristRoll --> EndEffector["End Effector Tool (Tool Pitch)\nOffset: [0, 0.08, 0]"]
-    EndEffector --> SensorPod["Sensor Pod Assembly (Optical Scanner)\nOffset: [0, 0.06, 0]"]
+    WristRoll --> EndEffector["End Effector Tool (Pitch: X-axis)\nOffset: [0, 0.04, 0]"]
+    EndEffector --> SensorPod["Sensor Pod Assembly (Scan Yaw: Y-axis)\nOffset: [0.08, 0.06, 0.08]"]
 ```
 
 Each child link's local transformation matrix $\mathbf{T}_{i}^{\text{local}}$ is defined relative to its parent joint frame:
