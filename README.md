@@ -110,7 +110,7 @@ flowchart TD
         SceneMgr["SceneManager\n(Contiguous URDF Meshes, Three.js)"]
         Renderer["WebGLRenderer\n(requestAnimationFrame @ 60 FPS)"]
 
-        WSGateway -->|Compact Delta JSON [[ch, val], ...]| Receiver
+        WSGateway -->|"Compact Delta JSON: [channel, value]"| Receiver
         Receiver --> RingBuffer
         RingBuffer --> SceneMgr
         SceneMgr --> Renderer

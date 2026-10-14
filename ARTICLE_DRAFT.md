@@ -10,7 +10,7 @@ In aerospace, industrial robotics, energy grids, and digital twin engineering, t
 
 When developers naively broadcast uncompressed full-state JSON snapshots over WebSockets at high refresh rates, the client's single-threaded JavaScript runtime chokes. V8 JSON deserialization and garbage collector (GC) allocation thrashing consume the browser's render budget, causing WebGL framerates to plummet from **60 FPS down to 18 FPS**, while flooding the network with megabytes of redundant sensor noise.
 
-In this deep dive, we walk through an end-to-end, production-grade reference architecture for a **Decoupled 3D Digital Twin and Telemetry Gateway** streaming 1,000 continuous channels to an interactive WebGL robotic arm.
+In this deep dive, we walk through an end-to-end, production-grade reference architecture—**TwinStream**, an open-source decoupled 3D digital twin and telemetry gateway—streaming 1,000 continuous channels to an interactive WebGL robotic arm.
 
 **What we achieved:**
 * **87.1% bandwidth reduction:** Compressed network throughput from $2,954\text{ KB/s}$ down to $382\text{ KB/s}$ during dynamic multi-axis motion ($\mathbf{> 99.5\%}$ reduction during stationary hold).
@@ -23,8 +23,8 @@ In this deep dive, we walk through an end-to-end, production-grade reference arc
 ---
 
 > 💡 **Publishing Note (Medium SEO & Canonical Setup):**  
-> *Target Keywords:* Three.js digital twin, real-time WebSockets, delta compression, WebGL 60 FPS, decoupled simulation architecture, deadband filtering, quaternion SLERP, robotics kinematics.  
-> *Canonical URL:* In Medium Story Settings $\rightarrow$ Advanced Settings, set the canonical link to your public engineering portfolio or GitHub repository.
+> *Target Keywords:* TwinStream, Three.js digital twin, real-time WebSockets, delta compression, WebGL 60 FPS, decoupled simulation architecture, deadband filtering, quaternion SLERP, robotics kinematics.  
+> *Canonical URL:* In Medium Story Settings $\rightarrow$ Advanced Settings, set the canonical link to your public engineering portfolio or GitHub repository (https://github.com/LeanoA/twinstream).
 
 ---
 
@@ -73,7 +73,7 @@ flowchart TD
         SceneMgr["SceneManager\n(Contiguous URDF Meshes, Three.js)"]
         Renderer["WebGLRenderer\n(requestAnimationFrame @ 60 FPS)"]
 
-        WSGateway -->|Compact Delta JSON [[ch, val], ...]| Receiver
+        WSGateway -->|"Compact Delta JSON: [channel, value]"| Receiver
         Receiver --> RingBuffer
         RingBuffer --> SceneMgr
         SceneMgr --> Renderer
