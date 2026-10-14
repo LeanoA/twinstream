@@ -1,11 +1,11 @@
-# Case 03: Decoupled 3D Digital Twin & High-Frequency Telemetry Gateway
+# TwinStream: Decoupled 3D Digital Twin & High-Frequency Telemetry Gateway
 
 [![Stack](https://img.shields.io/badge/Stack-Three.js%20%7C%20TypeScript%20%7C%20Node.js%20WebSockets%20%7C%20Vite%20%7C%20Docker-blue.svg)](#)
 [![Tests](https://img.shields.io/badge/Tests-51%2F51%20Passing%20(100%25)-brightgreen.svg)](#)
 [![Performance](https://img.shields.io/badge/Performance-60%20FPS%20%7C%20Zero--Allocation%20Render%20Loop-brightgreen.svg)](#)
 [![Bandwidth](https://img.shields.io/badge/Network-87.1%25%20Delta%20Compression-orange.svg)](#)
 [![Demo](https://img.shields.io/badge/Demo-Autonomous%20Web%20Worker%20Fallback-success.svg)](#)
-[![Standard](https://img.shields.io/badge/Robotics-ISO%209787%20%7C%20ROS%20REP--103-blueviolet.svg)](#)
+[![Kinematics](https://img.shields.io/badge/Kinematics-URDF--Inspired%20%7C%20Three.js%20%2BY-blueviolet.svg)](#)
 [![SDLC](https://img.shields.io/badge/SDLC-Spec--Driven%20Development%20(SDD)-purple.svg)](#)
 
 A battle-tested reference architecture demonstrating how to decouple continuous, high-frequency physical simulation engines ($100\text{ Hz}$, 1,000 channels) from browser-based 3D visualizers. Implements a high-throughput **Node.js/TypeScript Telemetry Gateway** with deadband delta compression ($\epsilon = 0.001$), driving an interactive **Three.js WebGL Digital Twin** at a rock-solid 60 FPS without garbage collector pauses or network saturation. Features an autonomous in-browser **Web Worker demo fallback** for static hosting (e.g., GitHub Pages).
@@ -17,7 +17,7 @@ A battle-tested reference architecture demonstrating how to decouple continuous,
 * **$87.1\%$ Bandwidth Reduction:** Cut dynamic streaming volume from $14.42\text{ MB}$ down to $1.87\text{ MB}$ over 5s ($2,954\text{ KB/s} \to 382\text{ KB/s}$); $> 99.5\%$ reduction during stationary hold ($12.4\text{ KB/s}$).
 * **$15\times$ Faster V8 Deserialization:** Reduced client JSON parsing latency from $231.4\ \mu\text{s}$ to $15.5\ \mu\text{s}$ per broadcast packet.
 * **Rock-Solid 60 FPS WebGL Rendering:** Slashed telemetry frame-budget consumption from $1.39\%$ to $0.09\%$ of the $16.67\text{ ms}$ render window, freeing up $99.9\%$ of the main thread for GPU draw calls and zero-allocation SLERP interpolation.
-* **Robotics Kinematic Fidelity:** Modeled an articulated 10-assembly robot using a URDF-inspired hierarchical scene graph, standard robotics nomenclatures (ISO 9787 frames), and ROS REP-103 metric conventions with contiguous mechanical links.
+* **Robotics Kinematic Fidelity:** Modeled an articulated 10-assembly robot using a URDF-inspired hierarchical scene graph with standard robotics link/joint nomenclatures, adapted to Three.js's $+Y$-up coordinate convention with contiguous mechanical links.
 * **Autonomous In-Browser Web Worker Demo:** Implemented dual-mode telemetry ingestion. When the Node.js gateway is unreachable (e.g. on static GitHub Pages), a background Web Worker autonomously simulates URDF kinematics and deadband delta compression at 60 FPS without blocking the main WebGL thread, accompanied by a clear visual disclaimer.
 * **Production Docker Topology:** Orchestrated via Docker Compose with an unprivileged Node 22 Alpine gateway and an ultra-lightweight Nginx Alpine web server ($< 30\text{ MB}$ image).
 
@@ -183,11 +183,11 @@ flowchart TD
 
 ## 📚 Technical Documentation & Deep Dives
 
-* 📖 **[Documentation Hub](file:///Users/xander/Projects/SWE_Matlab/portfolio_lab/case-03-realtime-3d-telemetry/docs/README.md)**: Central index to all engineering references.
-* 🏛️ **[Architectural Decision Records (ADRs)](file:///Users/xander/Projects/SWE_Matlab/portfolio_lab/case-03-realtime-3d-telemetry/docs/ARCHITECTURE_DECISIONS.md)**: In-depth rationale for the three-tier architecture, deadband algorithms, quaternion kinematics, and zero-allocation patterns.
-* 📐 **[Glossary & Mathematical Concepts](file:///Users/xander/Projects/SWE_Matlab/portfolio_lab/case-03-realtime-3d-telemetry/docs/GLOSSARY_AND_CONCEPTS.md)**: Full theoretical derivations (Quaternion SLERP, Forward Kinematics, V8 GC Mechanics).
-* 💡 **[Hard-Learned Lessons](file:///Users/xander/Projects/SWE_Matlab/portfolio_lab/case-03-realtime-3d-telemetry/docs/LESSONS_LEARNED.md)**: Practical gotchas (Alpine loopback IPv6 vs IPv4, antipodal quaternion spins, floating parts).
-* 📝 **[Publication-Ready Article Draft](file:///Users/xander/Projects/SWE_Matlab/portfolio_lab/case-03-realtime-3d-telemetry/ARTICLE_DRAFT.md)**: Complete engineering case study ready for Medium or technical blogs.
+* 📖 **[Documentation Hub](docs/README.md)**: Central index to all engineering references.
+* 🏛️ **[Architectural Decision Records (ADRs)](docs/ARCHITECTURE_DECISIONS.md)**: In-depth rationale for the three-tier architecture, deadband algorithms, quaternion kinematics, and zero-allocation patterns.
+* 📐 **[Glossary & Mathematical Concepts](docs/GLOSSARY_AND_CONCEPTS.md)**: Full theoretical derivations (Quaternion SLERP, Forward Kinematics, V8 GC Mechanics).
+* 💡 **[Hard-Learned Lessons](docs/LESSONS_LEARNED.md)**: Practical gotchas (Alpine loopback IPv6 vs IPv4, antipodal quaternion spins, floating parts).
+* 📝 **[Publication-Ready Article Draft](ARTICLE_DRAFT.md)**: Complete engineering case study ready for Medium or technical blogs.
 
 ---
 

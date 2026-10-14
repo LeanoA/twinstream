@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/example/case-03/schema/delta_packet.schema.json",
+  "$id": "https://raw.githubusercontent.com/LeanoA/twinstream/main/schema/delta_packet.schema.json",
   "title": "DeltaTelemetryPacket",
   "description": "Compact delta transmission packet containing only telemetry signals exceeding the deadband threshold",
   "type": "object",

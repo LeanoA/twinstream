@@ -370,18 +370,18 @@ To experience the true multi-process decoupled architecture—where the continuo
 
 ```bash
 # Clone and spin up the complete containerized stack
-git clone https://github.com/alexander-leano/scientific-compute-modernization-lab.git
-cd scientific-compute-modernization-lab/portfolio_lab/case-03-realtime-3d-telemetry
-docker compose up --build
+git clone https://github.com/LeanoA/twinstream.git
+cd twinstream
+docker compose up -d --build
 ```
-Open `http://localhost:8080` to inspect live WebSocket streaming and delta compression metrics.
+Open `http://localhost:5173` to explore the WebGL visualizer and `http://localhost:8080` for the WebSocket gateway.
 
 ### 3. Architecture Roadmap
 * **Cloud-Hosted Live Backend:** A fully managed cloud backend deployment with autoscaling WebSockets and multi-tenant telemetry distribution is planned for a future release to provide a persistent, globally accessible live stream.
 
 ---
 
-* **GitHub Repository:** [https://github.com/alexander-leano/scientific-compute-modernization-lab](https://github.com/alexander-leano/scientific-compute-modernization-lab) *(Case 03 Reference)*
+* **GitHub Repository:** [https://github.com/LeanoA/twinstream](https://github.com/LeanoA/twinstream)
 * **Connect on LinkedIn:** [linkedin.com/in/alexander-leano](https://linkedin.com/in/alexander-leano)
 
 *Have you encountered main-thread bottlenecks or GC stutter when streaming real-time simulation data into WebGL? What compression and interpolation strategies have worked best in your production architectures? Share your thoughts in the comments!*

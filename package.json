@@ -1,8 +1,8 @@
 {
-  "name": "case-03-realtime-3d-telemetry",
+  "name": "twinstream",
   "version": "1.0.0",
   "private": true,
-  "description": "Decoupled 3D Digital Twin & High-Frequency Telemetry Gateway Reference Architecture",
+  "description": "TwinStream: Decoupled 3D Digital Twin & High-Frequency Telemetry Gateway Reference Architecture",
   "type": "module",
   "scripts": {
     "test": "vitest run",

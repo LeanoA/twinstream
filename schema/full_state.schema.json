@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/example/case-03/schema/full_state.schema.json",
+  "$id": "https://raw.githubusercontent.com/LeanoA/twinstream/main/schema/full_state.schema.json",
   "title": "FullStateTelemetrySnapshot",
   "description": "Complete state snapshot of all active telemetry channels for a 3D digital twin system",
   "type": "object",
